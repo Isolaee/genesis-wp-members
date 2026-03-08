@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Genesis WP Members
- * Description: Custom refinements for Ultimate Member (UM) user registration & membership.
+ * Description: Custom refinements for user registration & membership.
  * Version: 1.0.0
  */
 
@@ -69,8 +69,18 @@ function genesis_generate_unique_membership_number() {
 }
 
 /**
+ * Temporary debug: output membership number in page source to confirm data & hook.
+ * Remove after confirmed working.
+ */
+add_action( 'wp_footer', function() {
+    if ( is_user_logged_in() ) {
+        $n = get_user_meta( get_current_user_id(), 'membership_number', true );
+        echo '<!-- membership_number: ' . esc_html( $n ) . ' -->';
+    }
+} );
+
+/**
  * Display the membership number on the UM "My Account" / profile page.
- * Hook: um_profile_field_filter__after (renders below profile fields)
  */
 add_action( 'um_after_account_general', 'genesis_display_membership_number_on_profile' );
 
