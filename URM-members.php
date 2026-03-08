@@ -81,7 +81,7 @@ add_action( 'wp_footer', function() {
     echo '<strong>DEBUG</strong> membership_number: ' . esc_html( $n ) . '<br>';
     global $wp_filter;
     $urm_hooks = array_filter( array_keys( $wp_filter ), function( $h ) {
-        return strpos( $h, 'um_' ) === 0;
+        return strpos( $h, 'um_' ) === 0 || strpos( $h, 'user_registration_' ) === 0;
     } );
     echo '<strong>URM hooks fired:</strong> ' . esc_html( implode( ', ', $urm_hooks ) );
     echo '</div>';
