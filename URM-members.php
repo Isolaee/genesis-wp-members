@@ -90,10 +90,10 @@ add_action( 'wp_footer', function() {
 /**
  * Display the membership number on the URM profile page.
  */
-add_action( 'um_after_profile_fields', 'genesis_display_membership_number_on_profile' );
+add_action( 'um_after_profile_fields', 'genesis_display_membership_number_on_profile', 10, 1 );
 
-function genesis_display_membership_number_on_profile() {
-    $user_id = get_current_user_id();
+function genesis_display_membership_number_on_profile( $args = [] ) {
+    $user_id = isset( $args['user_id'] ) ? (int) $args['user_id'] : get_current_user_id();
     if ( ! $user_id ) {
         return;
     }
