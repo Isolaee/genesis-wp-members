@@ -10,29 +10,47 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // ---------------------------------------------------------------------------
-// Admin settings
+// Admin settings — Users submenu
 // ---------------------------------------------------------------------------
 
-add_action( 'admin_init', 'genesis_dc_link_register_settings' );
+add_action( 'admin_menu', 'genesis_dc_link_admin_menu' );
 
-function genesis_dc_link_register_settings() {
-    register_setting( 'general', 'genesis_discord_invite_url', [
-        'type'              => 'string',
-        'sanitize_callback' => 'esc_url_raw',
-        'default'           => '',
-    ] );
-
-    add_settings_field(
-        'genesis_discord_invite_url',
+function genesis_dc_link_admin_menu() {
+    add_users_page(
         __( 'Discord Invite Link', 'genesis-wp-members' ),
-        'genesis_dc_link_field_html',
-        'general'
+        __( 'Discord Invite Link', 'genesis-wp-members' ),
+        'manage_options',
+        'genesis-discord-invite',
+        'genesis_dc_link_admin_page'
     );
 }
 
-function genesis_dc_link_field_html() {
+function genesis_dc_link_admin_page() {
+    if ( ! current_user_can( 'manage_options' ) ) {
+        wp_die( esc_html__( 'Permission denied.', 'genesis-wp-members' ) );
+    }
+
+    if ( isset( $_POST['genesis_discord_invite_url'] ) && check_admin_referer( 'genesis_dc_link_save' ) ) {
+        update_option( 'genesis_discord_invite_url', esc_url_raw( wp_unslash( $_POST['genesis_discord_invite_url'] ) ) );
+        echo '<div class="notice notice-success"><p>' . esc_html__( 'Saved.', 'genesis-wp-members' ) . '</p></div>';
+    }
+
     $value = get_option( 'genesis_discord_invite_url', '' );
-    echo '<input type="url" name="genesis_discord_invite_url" value="' . esc_attr( $value ) . '" class="regular-text" placeholder="https://discord.gg/..." />';
+    ?>
+    <div class="wrap">
+        <h1><?php esc_html_e( 'Discord Invite Link', 'genesis-wp-members' ); ?></h1>
+        <form method="post">
+            <?php wp_nonce_field( 'genesis_dc_link_save' ); ?>
+            <table class="form-table">
+                <tr>
+                    <th scope="row"><label for="genesis_discord_invite_url"><?php esc_html_e( 'Invite URL', 'genesis-wp-members' ); ?></label></th>
+                    <td><input type="url" id="genesis_discord_invite_url" name="genesis_discord_invite_url" value="<?php echo esc_attr( $value ); ?>" class="regular-text" placeholder="https://discord.gg/..." /></td>
+                </tr>
+            </table>
+            <?php submit_button(); ?>
+        </form>
+    </div>
+    <?php
 }
 
 // ---------------------------------------------------------------------------
