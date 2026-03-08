@@ -89,27 +89,48 @@ add_action( 'wp_footer', function() {
 
 /**
  * Display the membership number on the WPeverest User Registration profile page.
- * Hook: user_registration_after_account_profile_fields fires inside the Profile Details form.
+ * Injected via wp_footer JS because the profile fields hook output is buffered/discarded.
  */
-add_action( 'user_registration_after_account_profile_fields', 'genesis_display_membership_number_on_profile' );
+add_action( 'wp_footer', 'genesis_display_membership_number_on_profile' );
 
 function genesis_display_membership_number_on_profile() {
-    $user_id = get_current_user_id();
-    if ( ! $user_id ) {
+    if ( ! is_user_logged_in() ) {
         return;
     }
 
-    $number = get_user_meta( $user_id, 'membership_number', true );
+    $user_id = get_current_user_id();
+    $number  = get_user_meta( $user_id, 'membership_number', true );
     if ( ! $number ) {
         return;
     }
+    ?>
+    <script>
+    (function() {
+        function injectMembershipNumber() {
+            // Target the profile fields grid inside the URM My Account page.
+            var grid = document.querySelector('.ur-profile-details-content .ur-form-grid, .user-registration-MyAccount-content .ur-form-grid, .ur-my-account-profile .ur-form-grid');
+            if ( ! grid ) return false;
 
-    echo '<div class="ur-form-row">';
-    echo '<div class="ur-form-grid">';
-    echo '<div class="ur-field-item field-jäsennumero">';
-    echo '<label>' . esc_html__( 'Jäsen numero', 'genesis-wp-members' ) . '</label>';
-    echo '<span class="ur-label-value">' . esc_html( $number ) . '</span>';
-    echo '</div>';
-    echo '</div>';
-    echo '</div>';
+            // Avoid double-injection on re-runs.
+            if ( document.querySelector('.genesis-membership-number') ) return true;
+
+            var html = '<div class="ur-form-row genesis-membership-number" style="margin-top:16px;">'
+                + '<div class="ur-label"><label><?php echo esc_js( __( 'Jäsen numero', 'genesis-wp-members' ) ); ?></label></div>'
+                + '<div class="ur-field"><p class="ur-label-value"><?php echo esc_js( $number ); ?></p></div>'
+                + '</div>';
+
+            grid.insertAdjacentHTML( 'beforeend', html );
+            return true;
+        }
+
+        // Try immediately, then retry until the DOM is ready.
+        if ( ! injectMembershipNumber() ) {
+            var tries = 0;
+            var timer = setInterval( function() {
+                if ( injectMembershipNumber() || ++tries > 20 ) clearInterval( timer );
+            }, 200 );
+        }
+    })();
+    </script>
+    <?php
 }
