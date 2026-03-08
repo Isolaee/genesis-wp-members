@@ -69,14 +69,22 @@ function genesis_generate_unique_membership_number() {
 }
 
 /**
- * Temporary debug: output membership number in page source to confirm data & hook.
+ * Temporary debug: dump all URM hooks firing on this page visibly + membership number.
  * Remove after confirmed working.
  */
 add_action( 'wp_footer', function() {
-    if ( is_user_logged_in() ) {
-        $n = get_user_meta( get_current_user_id(), 'membership_number', true );
-        echo '<!-- membership_number: ' . esc_html( $n ) . ' -->';
+    if ( ! is_user_logged_in() ) {
+        return;
     }
+    $n = get_user_meta( get_current_user_id(), 'membership_number', true );
+    echo '<div style="position:fixed;bottom:0;left:0;right:0;background:#000;color:#0f0;font-family:monospace;font-size:12px;padding:8px;z-index:99999;max-height:200px;overflow:auto;">';
+    echo '<strong>DEBUG</strong> membership_number: ' . esc_html( $n ) . '<br>';
+    global $wp_filter;
+    $urm_hooks = array_filter( array_keys( $wp_filter ), function( $h ) {
+        return strpos( $h, 'um_' ) === 0;
+    } );
+    echo '<strong>URM hooks fired:</strong> ' . esc_html( implode( ', ', $urm_hooks ) );
+    echo '</div>';
 } );
 
 /**
