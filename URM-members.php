@@ -80,9 +80,9 @@ add_action( 'wp_footer', function() {
 } );
 
 /**
- * Display the membership number on the UM "My Account" / profile page.
+ * Display the membership number on the URM profile page.
  */
-add_action( 'um_after_account_general', 'genesis_display_membership_number_on_profile' );
+add_action( 'um_after_profile_fields', 'genesis_display_membership_number_on_profile' );
 
 function genesis_display_membership_number_on_profile() {
     $user_id = get_current_user_id();
